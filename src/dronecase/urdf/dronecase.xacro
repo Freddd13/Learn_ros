@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="case">
+    <xacro:include filename="$(find dronecase)/urdf/cuboid.xacro"/>
+    <!-- dronecase construction -->
+    <xacro:macro name="dronecase" params="parent">
+        <basic_cuboid parent="${parent}"/>
+        <other_cuboid parent="basic_cuboid_link" prefix="other_cuboid_xp" 
+                      box_x="${length-2*edge_width}" box_y="${edge_width}" box_z="${height-2*edge_width}"
+                      ori_x="${(width-edge_width)/2}" ori_y="0.0" ori_z="${(height-edge_width)/2}" rpy_y="1.57"/>
+        <other_cuboid parent="basic_cuboid_link" prefix="other_cuboid_xn"  
+                      box_x="${length-2*edge_width}" box_y="${edge_width}" box_z="${height-2*edge_width}"
+                      ori_x="${-(width-edge_width)/2}" ori_y="0.0" ori_z="${(height-edge_width)/2}" rpy_y="-1.57"/> 
+        <other_cuboid parent="basic_cuboid_link" prefix="other_cuboid_yp"  
+                      box_x="${width}" box_y="${edge_width}" box_z="${height-2*edge_width}"
+                      ori_x="0.0" ori_y="${(length-edge_width)/2}" ori_z="${(height-edge_width)/2}" rpy_y="0.0"/>
+        <other_cuboid parent="basic_cuboid_link" prefix="other_cuboid_yn"  
+                      box_x="${width}" box_y="${edge_width}" box_z="${height-2*edge_width}"
+                      ori_x="0.0" ori_y="${-(length-edge_width)/2}" ori_z="${(height-edge_width)/2}" rpy_y="0.0"/>                        
+        <top_cuboid parent="basic_cuboid_link" prefix="top_cuboid_yp"  
+                    box_x="${length/2}" box_y="${width}" box_z="${edge_width}"
+                    ori_x="0.0" ori_y="${length/4}" ori_z="${height-edge_width}" rpy_y="1.57"/>                        
+        <top_cuboid parent="basic_cuboid_link" prefix="top_cuboid_yn"  
+                    box_x="${length/2}" box_y="${width}" box_z="${edge_width}"
+                    ori_x="0.0" ori_y="${-length/4}" ori_z="${height-edge_width}" rpy_y="-1.57"/> 
+        <!-- transmissions -->
+        <transmissions prefix="top_cuboid_yp"/>
+        <transmissions prefix="top_cuboid_yn"/>
+        <!-- Gazebo -->
+        <gazebo_tag prefix="basic_cuboid" />
+        <gazebo_tag prefix="other_cuboid_xp" />
+        <gazebo_tag prefix="other_cuboid_xn" />
+        <gazebo_tag prefix="other_cuboid_yp" />
+        <gazebo_tag prefix="other_cuboid_yn" />
+        <gazebo_tag prefix="top_cuboid_yp" />
+        <gazebo_tag prefix="top_cuboid_yn" />
+        <gazebo>
+            <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+                <robotNamespace>/dronecase</robotNamespace>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+</robot>

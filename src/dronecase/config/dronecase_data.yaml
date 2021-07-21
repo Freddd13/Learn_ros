@@ -1,0 +1,11 @@
+length: 2.5
+width: 1.0
+height: 1.5
+edge_width: 0.1
+bottom_mass: 0.4
+other_x_mass: 0.2
+other_y_mass: 0.15
+top_mass: 0.1
+density: 1000.0
+box_color: Gazebo/White
+top_color: Gazebo/Gray

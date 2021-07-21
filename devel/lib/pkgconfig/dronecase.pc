@@ -1,0 +1,8 @@
+prefix=/home/yxt/programming/ros/learn_ros/devel
+
+Name: dronecase
+Description: Description of dronecase
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

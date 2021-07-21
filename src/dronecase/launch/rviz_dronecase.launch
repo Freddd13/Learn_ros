@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- auto convert xacro to urdf -->
+    <arg name="model" default="$(find xacro)/xacro --inorder '$(find dronecase)/urdf/dronecase_test.xacro'"/>
+    <param name="robot_description" command="$(arg model)"/>
+    <!-- the following command will utilize urdf file -->
+    <!-- <param name="robot_description" textfile="$(find dronecase)/urdf/dronecase.urdf"/> -->
+
+    <param name="use_gui" value="true"/>
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" />
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find dronecase)/config/rviz_cfg.rviz"/>
+    <!-- <node pkg="rviz" type="rviz" name="rviz" /> -->
+</launch>

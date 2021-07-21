@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="cuboid">
+    <!-- property -->
+    <xacro:property name="yaml_file" value="$(find dronecase)/config/dronecase_data.yaml"/>
+    <xacro:property name="props" value="${load_yaml(yaml_file)}"/>
+
+    <xacro:property name="length" value="${props['length']}"/>
+    <xacro:property name="width" value="${props['width']}"/>
+    <xacro:property name="height" value="${props['height']}"/>
+    <xacro:property name="edge_width" value="${props['edge_width']}"/>
+    <xacro:property name="density" value="${props['density']}"/>  
+    <xacro:property name="box_color" value="${props['box_color']}"/>  
+    <xacro:property name="top_color" value="${props['top_color']}"/>
+
+    <!-- bottom cuboid -->
+    <xacro:macro name="basic_cuboid" params="parent">
+        <joint name="basic_cuboid_joint" type="fixed">
+            <origin xyz="0.0 0.0 ${edge_width / 2}" rpy="0.0 0.0 0.0"/>
+            <parent link="${parent}"/>
+            <child link="basic_cuboid_link"/>
+        </joint>
+
+        <link name="basic_cuboid_link">
+            <!-- calculate cuboid inertia params -->
+            <!-- TODO(unify box_xyz of different links, that means we shouldn't use a single edge_width to define) -->
+            <xacro:property name="box_x" value="${width}"/>
+            <xacro:property name="box_y" value="${length}"/>
+            <xacro:property name="box_z" value="${edge_width}"/>
+            
+            <xacro:property name="mass" value="${density*box_x*box_y*box_z}"/>
+            <xacro:property name="ixx" value="${mass*(box_y**2 + box_z**2)/12}"/>
+            <xacro:property name="iyy" value="${mass*(box_x**2 + box_z**2)/12}"/>
+            <xacro:property name="izz" value="${mass*(box_y**2 + box_x**2)/12}"/>
+            <!-- inertia settings -->            
+            <inertial>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <mass value="${mass}"/>
+                <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}"/>
+            </inertial>
+            <visual name="basic_cuboid_link_visual">
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <box size="${width} ${length} ${edge_width}"/>
+                </geometry>
+                <material name="basic_cuboid_link_material">
+                    <color rgba="1.0 0.0 0.0 1.0"/>
+                    <!-- <texture filename=""/> -->
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <box size="${width} ${length} ${edge_width}"/>
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+    <!-- other cuboids -->
+    <xacro:macro name="other_cuboid" params="parent prefix box_x box_y box_z ori_x ori_y ori_z rpy_y">
+        <joint name="${prefix}_joint" type="fixed">
+            <origin xyz="${ori_x} ${ori_y} ${ori_z}" rpy="0.0 0.0 ${rpy_y}"/>
+            <parent link="${parent}"/>
+            <child link="${prefix}_link"/>
+        </joint>
+
+        <link name="${prefix}_link">
+            <!-- calculate cuboid inertia params -->
+            <xacro:property name="mass" value="${density * box_x*box_y*box_z}"/>
+            <xacro:property name="ixx" value="${mass*(box_y**2 + box_z**2)/12}"/>
+            <xacro:property name="iyy" value="${mass*(box_x**2 + box_z**2)/12}"/>
+            <xacro:property name="izz" value="${mass*(box_y**2 + box_x**2)/12}"/>
+            <!-- inertia settings -->
+            <inertial>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <mass value="${mass}"/>
+                <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}"/>
+            </inertial>
+            <visual name="${prefix}_visual">
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <box size="${box_x} ${box_y} ${box_z}"/>
+                </geometry>
+                <material name="${prefix}_material">
+                    <color rgba="1.0 0.0 0.0 1.0"/>
+                    <!-- <texture filename=""/> -->
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <box size="${box_x} ${box_y} ${box_z}"/>
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+    <!-- top cuboids -->
+    <xacro:macro name="top_cuboid" params="parent prefix box_x box_y box_z ori_x ori_y ori_z rpy_y">
+        <joint name="${prefix}_joint" type="prismatic">
+            <origin xyz="${ori_x} ${ori_y} ${ori_z}" rpy="0.0 0.0 ${rpy_y}"/>
+            <parent link="${parent}"/>
+            <child link="${prefix}_link"/>
+            <axis xyz="1.0 0.0 0.0"/>
+            <limit lower="0.0" upper="${box_x*0.7}" effort="30.0" velocity="1.0"/>
+            <safety_controller k_position = "5" k_velocity="10" soft_lower_limit="0.0" soft_upper_limit="${box_x*0.65}"/>
+        </joint>
+
+        <link name="${prefix}_link">
+            <!-- calculate cuboid inertia params -->
+            <xacro:property name="mass" value="${density * box_x*box_y*box_z}"/>
+            <xacro:property name="ixx" value="${mass*(box_y**2 + box_z**2)/12}"/>
+            <xacro:property name="iyy" value="${mass*(box_x**2 + box_z**2)/12}"/>
+            <xacro:property name="izz" value="${mass*(box_y**2 + box_x**2)/12}"/>
+            <!-- inertia settings -->            
+            <inertial>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <mass value="${mass}"/>
+                <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}"/>
+            </inertial>
+            <visual name="${prefix}_link_visual">
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <box size="${box_x} ${box_y} ${box_z}"/>
+                </geometry>
+                <material name="${prefix}_link_material">
+                    <color rgba="1.0 0.0 0.0 1.0"/>
+                    <!-- <texture filename=""/> -->
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <box size="${box_x} ${box_y} ${box_z}"/>
+                </geometry>
+            </collision>
+        </link>
+        
+    </xacro:macro>
+
+    <!-- transmissions -->
+    <xacro:macro name="transmissions" params="prefix">
+        <!-- http://wiki.ros.org/ros_control -->
+        <!-- http://gazebosim.org/tutorials/?tut=ros_control -->
+        <transmission name="simple_trans">
+            <!-- for now Gazebo only implements the following interface: SimpleTransmission-->
+            <type>transmission_interface/SimpleTransmission</type>  
+            <joint name="${prefix}_joint" >
+                <!-- Effort/Velocity/Position -->
+                <!-- All controllers use the forward_command_controller to send commands to a hardware interface. -->
+                <hardwareInterface>EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="${prefix}_joint_motor">
+                <hardwareInterface>EffortJointInterface</hardwareInterface>
+                <mechanicalReductioon>1</mechanicalReductioon>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+
+    <!-- Gazebo color -->
+    <xacro:macro name="gazebo_tag" params="prefix">
+        <xacro:property name="link_color" value="${box_color}"/>
+        <xacro:if value="${prefix.startswith('top')}">
+            <xacro:property name="link_color" value="${top_color}"/>
+        </xacro:if>
+        <gazebo reference="${prefix}_link">
+            <material>${link_color}</material>
+        </gazebo>
+    </xacro:macro>
+</robot>
